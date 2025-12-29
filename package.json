@@ -1,0 +1,27 @@
+{
+  "name": "microservice1-films",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Loocist23/Microservice1-Films#readme",
+  "bugs": {
+    "url": "https://github.com/Loocist23/Microservice1-Films/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Loocist23/Microservice1-Films.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mysql2": "^3.16.0",
+    "sequelize": "^6.37.7"
+  }
+}
