@@ -1,100 +1,90 @@
 const Genre = require('../models/Genre');
+const { BadRequestError, NotFoundError } = require('../errors/HttpError');
+const { validateGenrePayload } = require('../validators/genre.validator');
+
+const parseIdParam = (rawId) => {
+    const id = Number(rawId);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new BadRequestError('Identifiant invalide fourni.');
+    }
+
+    return id;
+};
+
+const findGenreOrThrow = async (id) => {
+    const genre = await Genre.findByPk(id);
+
+    if (!genre) {
+        throw new NotFoundError(`Genre ${id} introuvable.`);
+    }
+
+    return genre;
+};
 
 module.exports = {
     findAll: async (req, res) => {
-        res.json(await Genre.findAll())
+        const genres = await Genre.findAll({
+            order: [['label', 'ASC']]
+        });
+
+        res.json({
+            success: true,
+            data: genres
+        });
     },
 
     find: async (req, res) => {
-        const id = req.params.id
+        const id = parseIdParam(req.params.id);
+        const genre = await findGenreOrThrow(id);
 
-        try {
-            const genre = await Genre.findByPk(id)
-
-            if(!genre) {
-                return res.status(400).json({
-                    success: false,
-                    error: "Genre not found"
-                })
-            }
-
-            return res.json({
-                success: true,
-                data: genre
-            })
-        } catch (e) {
-            res.json({
-                success: false,
-                error: 'Error : ' + e
-            })
-        }
+        res.json({
+            success: true,
+            data: genre
+        });
     },
 
-    create: async(req, res) => {
-        try {
-            const genre = await Genre.create(req.body)
+    create: async (req, res) => {
+        const { isValid, payload, errors } = validateGenrePayload(req.body);
 
-            return res.json({
-                success: true,
-                data: genre
-            })
-        } catch (e) {
-            throw new Error('Error : ' + e)
+        if (!isValid) {
+            throw new BadRequestError('La validation des données a échoué.', errors);
         }
+
+        const genre = await Genre.create(payload);
+
+        res.status(201).json({
+            success: true,
+            data: genre
+        });
     },
 
-    update: async(req, res) => {
-        const id = req.params.id
+    update: async (req, res) => {
+        const id = parseIdParam(req.params.id);
+        const { isValid, payload, errors } = validateGenrePayload(req.body, { partial: true });
 
-        try {
-            const genre = await Genre.findByPk(id)
-
-            if(!genre) {
-                return res.json({
-                    success: false,
-                    error: "Genre not found"
-                })
-            }
-
-            await genre.update(req.body)
-
-            return res.json({
-                success: true,
-                data: genre
-            })
-
-        } catch (e) {
-            return res.status(500).json({
-                success: false,
-                error: 'Error : ' + e,
-            });
+        if (!isValid) {
+            throw new BadRequestError('La validation des données a échoué.', errors);
         }
+
+        if (Object.keys(payload).length === 0) {
+            throw new BadRequestError('Aucune donnée valide à mettre à jour.');
+        }
+
+        const genre = await findGenreOrThrow(id);
+        await genre.update(payload);
+
+        res.json({
+            success: true,
+            data: genre
+        });
     },
 
     delete: async (req, res) => {
-        const id = req.params.id
+        const id = parseIdParam(req.params.id);
+        const genre = await findGenreOrThrow(id);
 
-        try {
-            const genre = await Genre.findByPk(id)
-
-            if(!genre) {
-                return res.json({
-                    success: false,
-                    error: "Genre not found"
-                })
-            }
-
-            await genre.destroy()
-
-            return res.json({
-                success: true
-            })
-
-        } catch (e) {
-            return res.status(500).json({
-                success: false,
-                error: 'Error : ' + e
-            })
-        }
+        await genre.destroy();
+        res.status(204).send();
     }
-}
+};

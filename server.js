@@ -1,13 +1,27 @@
 const express = require('express');
-const sequelize = require('./app/database/database')
+require('./app/database/database');
 
-// Routes
+const { PORT } = require('./app/config/env');
 const genreRoutes = require('./app/routes/genre.routes');
+const corsMiddleware = require('./app/middlewares/cors');
+const notFoundMiddleware = require('./app/middlewares/notFound');
+const errorHandler = require('./app/middlewares/errorHandler');
 
 const app = express();
-const port = 3000;
+
+app.disable('x-powered-by');
+app.use(corsMiddleware);
 app.use(express.json());
 
-app.use('/genre', genreRoutes);
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
+});
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+app.use('/api/genres', genreRoutes);
+
+app.use(notFoundMiddleware);
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
