@@ -1,8 +1,11 @@
 const express = require('express');
 require('./app/database/database');
+require('./app/models/associations');
 
 const { PORT } = require('./app/config/env');
 const genreRoutes = require('./app/routes/genre.routes');
+const filmRoutes = require('./app/routes/film.routes');
+const ageRatingRoutes = require('./app/routes/ageRating.routes');
 const corsMiddleware = require('./app/middlewares/cors');
 const notFoundMiddleware = require('./app/middlewares/notFound');
 const errorHandler = require('./app/middlewares/errorHandler');
@@ -18,6 +21,8 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/genres', genreRoutes);
+app.use('/api/films', filmRoutes);
+app.use('/api/age-ratings', ageRatingRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorHandler);

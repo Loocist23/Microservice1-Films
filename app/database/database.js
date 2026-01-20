@@ -3,7 +3,13 @@ const { DATABASE_URL, NODE_ENV } = require('../config/env');
 
 const sequelize = new Sequelize(DATABASE_URL, {
     logging: NODE_ENV !== 'production',
-    dialect: 'mysql'
+    dialect: 'mysql',
+    define: {
+        timestamps: true,
+        underscored: true,
+        createdAt: 'created_at',
+        updatedAt: 'modified_at'
+    }
 });
 
 (async () => {
